@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<meta name="description" content="This is the documentation for our web server as per assignment 3" />
+		<meta name="keywords" content="Web Technology, Web, Technology, Assignment 3" />
+		<link rel="stylesheet" href="apiscreen.css" type="text/css" media="screen"/> <!--The CSS file has been modified for Assignment 3-->
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<title>Web Technology Assignment 2 Group CS045 - Hakuna Matata</title>
+		<script>
+			$(document).ready(function(){
+				$('nav a').click(function(){
+					$('nav a').removeClass("active");
+					$(this).addClass("active");
+				});
+
+				$(".target").hide();
+			});
+		</script>
+	</head>
+
+  <body>
+		<nav>
+			<a href="#home">Home</a>
+			<a href="#getTable">GET /table</a>
+			<a href="#getItem">GET /table/id</a>
+			<a href="#postItem">POST /table</a>
+			<a href="#putItem">PUT /table/id</a>
+			<a href="#deleteItem">DELETE /table/id</a>
+			<img src="https://disneywildaboutsafety.com/wp-content/uploads/2013/07/parents_chars.png" alt="Timon and Pumbaa">
+		</nav>
+
+    <main>
+			<h1 id="home">CS045 Hakuna Matata Web API</h1>
+
+			<section id="getTable">
+        <h2>GET /table</h2>
+				<p>Returns the whole table from the database as a JSON object.</p>
+          <h3>Resource Information</h3>
+          <table>
+            <tr>
+              <td class="row">Endpoint</td>
+              <td><code>http://127.0.0.1:8080/table</code></td>
+            </tr>
+            <tr>
+              <td class="row">Request Method</td>
+              <td><code>GET</code></td>
+            </tr>
+            <tr>
+              <td class="row">Response Format</td>
+              <td>JSON</td>
+            </tr>
+          </table>
+
+          <h3>Example Request</h3>
+          <p><code>GET http://127.0.0.1:8080/table</code></p>
+
+          <h3>Example Result</h3>
+          <p><code>[{“id”:1, “name”:”Anakin Skywalker”, “category”:”Jedi Padawan”, “location”:”Coruscant”, “date”:”2002-05-16”, “amount”:1}, {“id”:2, “name”:”Han Solo”, “category”:”Space Badass”, “location”:”The Millennium Falcon”, “date”:”1977-12-15”, “amount”:1}, {“id”:3, “name”:”Yoda”, “category”:”Jedi Master”, “location”:”Coruscant”, “date”:”2002-05-16”, “amount”:1}]</code></p>
+
+					<h3>Possible Status Codes</h3>
+					<table>
+						<tr>
+							<td class="row"><code>200</code></td>
+							<td>The server returns the requested table.</td>
+						</tr>
+					</table>
+      </section>
+
+      <section id="getItem">
+        <h2>GET /table/id</h2>
+				<p>Returns a row from the table based on the id that is given as a parameter.</p>
+				<h3>Resource Information</h3>
+				<table>
+					<tr>
+						<td class="row">Endpoint</td>
+						<td><code>http://127.0.0.1:8080/table/id</code></td>
+					</tr>
+					<tr>
+						<td class="row">Request Method</td>
+						<td><code>GET</code></td>
+					</tr>
+					<tr>
+						<td class="row">Response Format</td>
+						<td>JSON</td>
+					</tr>
+				</table>
+
+				<h3>Example Request</h3>
+				<p><code>GET http://127.0.0.1:8080/table/1</code></p>
+
+				<h3>Example Result</h3>
+				<p><code>[{“id”:1, “name”:”Anakin Skywalker”, “category”:”Jedi Padawan”, “location”:”Coruscant”, “date”:”2002-05-16”, “amount”:1}]</code></p>
+
+				<h3>Possible Status Codes</h3>
+				<table>
+					<tr>
+						<td class="row"><code>200</code></td>
+						<td>The server returns the requested table.</td>
+					</tr>
+					<tr>
+						<td class="row"><code>204</code></td>
+						<td>The requested item has been deleted from the database.</td>
+					</tr>
+					<tr>
+						<td class="row"><code>404</code></td>
+						<td>The requested item could not be found in the database.</td>
+					</tr>
+				</table>
+      </section>
+
+      <section id="postItem">
+        <h2>POST /table</h2>
+				<p>Adds a row to the table in the database based on the information that accompanies the request as a JSON object.</p>
+				<h3>Resource Information</h3>
+				<table>
+					<tr>
+						<td class="row">Endpoint</td>
+						<td><code>http://127.0.0.1:8080/table</code></td>
+					</tr>
+					<tr>
+						<td class="row">Request Method</td>
+						<td><code>POST</code></td>
+					</tr>
+					<tr>
+						<td class="row">Response Format</td>
+						<td>JSON</td>
+					</tr>
+				</table>
+
+				<h3>Example Request</h3>
+				<p><code>POST http://127.0.0.1:8080/table</code></p>
+
+				<h3>Example Request Body</h3>
+				<p><code>[{“name”:”Mace Windu”, “category”:”Jedi Master”, “location”:”Coruscant”, “date”:”2002-05-16”, “amount”:1}]</code></p>
+
+				<h3>Example Response</h3>
+				<p><code>{"ITEM id 1 ADDED": "http://localhost:8080/table/1"}</code></p>
+
+				<h3>Possible Status Codes</h3>
+				<table>
+					<tr>
+						<td class="row"><code>201</code></td>
+						<td>The item has been added to the table.</td>
+					</tr>
+					<tr>
+						<td class="row"><code>405</code></td>
+						<td>The JSON format is incorrect or the object is missing.</tr>
+					<tr>
+						<td class="row"><code>507</code></td>
+						<td>The server could not process the request because the database has insufficient space.</td>
+					</tr>
+				</table>
+      </section>
+
+      <section id="putItem">
+        <h2>PUT /table/id</h2>
+				<p>Edits a row from the table based on the id as a parameter and the JSON object that accompanies it.</p>
+				<h3>Resource Information</h3>
+				<table>
+					<tr>
+						<td class="row">Endpoint</td>
+						<td><code>http://127.0.0.1:8080/table/id</code></td>
+					</tr>
+					<tr>
+						<td class="row">Request Method</td>
+						<td><code>PUT</code></td>
+					</tr>
+					<tr>
+						<td class="row">Response Format</td>
+						<td>JSON</td>
+					</tr>
+				</table>
+
+				<h3>Example Request</h3>
+				<p><code>PUT http://127.0.0.1:8080/table/1</code></p>
+
+				<h3>Example Request Body</h3>
+				<p><code>[{“name”:”Darth Vader”, “category”:”Sith Lord”, “location”:”Coruscant”, “date”:”2002-05-16”, “amount”:1}]</code></p>
+
+				<h3>Possible Status Codes</h3>
+				<table>
+					<tr>
+						<td class="row"><code>204</code></td>
+						<td>The requested item has been deleted from the database and cannot be edited.</td>
+					</tr>
+					<tr>
+						<td class="row"><code>404</code></td>
+						<td>The requested item to edit could not be found in the database.</td>
+					</tr>
+					<tr>
+						<td class="row"><code>507</code></td>
+						<td>The server could not process the request because the database has insufficient space.</td>
+					</tr>
+				</table>
+      </section>
+
+      <section id="deleteItem">
+        <h2>DELETE /table/id</h2>
+				<p>Deletes a row from the table in the database based on the id as a parameter.</p>
+				<h3>Resource Information</h3>
+				<table>
+					<tr>
+						<td class="row">Endpoint</td>
+						<td><code>http://127.0.0.1:8080/table/id</code></td>
+					</tr>
+					<tr>
+						<td class="row">Request Method</td>
+						<td><code>DELETE</code></td>
+					</tr>
+					<tr>
+						<td class="row">Response Format</td>
+						<td>JSON</td>
+					</tr>
+				</table>
+
+				<h3>Example Request</h3>
+				<p><code>DELETE http://127.0.0.1:8080/table/2</code></p>
+
+				<h3>Possible Status Codes</h3>
+				<table>
+					<tr>
+						<td class="row"><code>204</code></td>
+						<td>The server has accepted the request and deleted the row.</td>
+					</tr>
+					<tr>
+						<td class="row"><code>404</code></td>
+						<td>The requested item to edit could not be found in the database.</td>
+					</tr>
+				</table>
+      </section>
+    </main>
+  </body>
