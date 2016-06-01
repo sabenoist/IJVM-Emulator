@@ -1,0 +1,6 @@
+Build Number: 7e07127
+Project Version: 0.22
+Build Date: 2015-05-09T18:56:19
+
+QuietlyReturnTypeProcessor.class: 3418
+AsyncReturnTypeProcessor.class: 4384

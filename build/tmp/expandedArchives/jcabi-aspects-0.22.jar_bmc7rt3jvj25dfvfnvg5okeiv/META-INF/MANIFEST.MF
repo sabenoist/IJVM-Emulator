@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Built-By: r
+Build-Jdk: 1.7.0_75
+JCabi-Version: 0.22
+Created-By: Apache Maven 3.2.2
+JCabi-Date: 2015-05-09 18:55
+JCabi-Build: 7e07127
+Archiver-Version: Plexus Archiver
+

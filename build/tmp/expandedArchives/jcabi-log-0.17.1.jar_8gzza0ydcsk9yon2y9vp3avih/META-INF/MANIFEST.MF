@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1453499463185
+Build-Jdk: 1.7.0_91
+Built-By: r
+Bundle-Description: Wrapper of SLF4J and a few supplementary logging cla
+ sses
+Bundle-DocURL: http://www.jcabi.com
+Bundle-License: http://www.jcabi.com/LICENSE.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: jcabi-log
+Bundle-SymbolicName: com.jcabi.log
+Bundle-Vendor: jcabi.com
+Bundle-Version: 0.17.1
+Created-By: Apache Maven Bundle Plugin
+Export-Package: com.jcabi.log;uses:="org.apache.log4j,org.apache.log4j.s
+ pi";version="0.17.1"
+Import-Package: com.jcabi.aspects,javax.xml.transform,javax.xml.transfor
+ m.dom,javax.xml.transform.stream,org.apache.log4j;version="[1.2,2)";res
+ olution:=optional,org.apache.log4j.spi;version="[1.2,2)";resolution:=op
+ tional,org.slf4j;version="[1.7,2)",org.w3c.dom
+JCabi-Build: ${buildNumber}
+JCabi-Date: 2016-01-22 21:50
+JCabi-Version: 0.17.1
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.6))"
+Tool: Bnd-3.0.0.201509101326

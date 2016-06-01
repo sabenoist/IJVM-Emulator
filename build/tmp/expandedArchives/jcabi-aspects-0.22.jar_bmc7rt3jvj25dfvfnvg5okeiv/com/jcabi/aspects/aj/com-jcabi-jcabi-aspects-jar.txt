@@ -1,0 +1,35 @@
+Build Number: 7e07127
+Project Version: 0.22
+Build Date: 2015-05-09T18:56:19
+
+MethodInterrupter$1.class: 734
+MethodScheduler$Service.class: 4101
+MethodValidator.class: 14406
+MethodLogger$1.class: 1140
+ImmutabilityChecker$Violation.class: 856
+SingleException.class: 6909
+MethodValidator$1.class: 2646
+MethodCacher$1.class: 704
+MethodScheduler.class: 5286
+MethodCacher$Tunnel.class: 3472
+Repeater.class: 8825
+Parallelizer$ParallelException.class: 900
+ExceptionsLogger.class: 3752
+MethodLogger.class: 15712
+JoinPointUtils.class: 1258
+MethodScheduler$Service$1.class: 1190
+Mnemos.class: 9957
+MethodInterrupter$Call.class: 2960
+NamedThreads.class: 1441
+ImmutabilityChecker.class: 7267
+MethodInterrupter.class: 5378
+MethodCacher.class: 10987
+MethodLogger$Marker.class: 3790
+Parallelizer.class: 8773
+MethodAsyncRunner$1.class: 1791
+MethodAsyncRunner.class: 5024
+Parallelizer$1.class: 1589
+MethodCacher$Key.class: 4012
+QuietExceptionsLogger.class: 4695
+LogHelper.class: 1345
+MethodLogger$2.class: 1269

@@ -8,7 +8,7 @@ import java.io.IOException;
 public class MachineFactory {
 
 	//public static IJVMInterface createIJVMInstance(File binary) throws IOException {
-    public static IJVM createIJVMInstance(File binary) throws IOException {
+    public static IJVMInterface createIJVMInstance(File binary) throws IOException {
         // Create new machine instance here and return it.
 
         // 1) Load the binary
