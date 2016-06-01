@@ -16,5 +16,4 @@ public class MachineFactory {
 
         return new IJVM(binary);
     }
-
 }

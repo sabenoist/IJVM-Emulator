@@ -9,11 +9,14 @@ import java.io.PrintStream;
 import java.io.FileInputStream;
 
 import java.nio.file.Files;
+import java.nio.ByteBuffer;
+
+import java.math.BigInteger;
 
 
 public class IJVM implements IJVMInterface {
 	static final byte NOP = (byte)0x00;
-    static final byte OUT = (byte)0xfd;
+    static final byte OUT = (byte)0xFD;
     static final byte BIPUSH = (byte)0x10;
     static final byte DUP = (byte)0x59;
     static final byte GOTO = (byte)0xA7;
@@ -35,30 +38,107 @@ public class IJVM implements IJVMInterface {
     static final byte WIDE = (byte)0xC4;
 
     private byte[] bytes;
+    private byte[] constants;
+    private byte[] text;
+
+    private byte[] programMemoryAddress;
+    private byte[] constantsMemoryAddress;
+    private byte[] textMemoryAddress;
+
 	private byte currentInstruction;
 
 	private InputStream in;
 	private PrintStream out;
 
-    private int bytesPosition;
+    private int textPosition;
 	private int programCounter;
 
 	public IJVM(File input) {
         try {
+            bytes = new byte[(int) input.length()];
+            programMemoryAddress = new byte[4];
+            constantsMemoryAddress = new byte[4];
+            textMemoryAddress = new byte[4];
+
             FileInputStream fileIn = new FileInputStream(input);
             fileIn.read(bytes);
             fileIn.close();
+
+            textPosition = 0;
+
+            programCounter = 0;
+            currentInstruction = NOP;
         }
         catch(Exception e) {
             System.err.printf("%s\n", e.getMessage());
         }
 
-        bytes = new byte[(int) input.length()];
-        bytesPosition = 0;
-
-		programCounter = 0;
-		currentInstruction = NOP;
+        //byteBlocksParser();
 	}
+
+    private void byteBlocksParser() {
+        //Stores the location of the program in memory
+        int position = 0;
+        System.arraycopy(bytes, position, programMemoryAddress, 0, 4);
+
+        System.out.println("PASSED PROGRAM ADDRESS");
+
+        //Stores the location of the constants in memory
+        position += 4; 
+        System.arraycopy(bytes, position, constantsMemoryAddress, 0, 4);
+
+        System.out.println("PASSED CONSTANTS ADDRESS");
+
+        //Determines the size of the constants block
+        position += 4;
+        byte[] constantsSizeArray = new byte[4];
+
+        System.arraycopy(bytes, position, constantsSizeArray, 0, 4);
+        //int constantsSize = ByteBuffer.wrap(constantsSizeArray).getInt();
+        //int constantsSize = new BigInteger(constantsSizeArray).intValue();
+        //constantsSize /= 8;       
+
+        String constantsSizeHex = javax.xml.bind.DatatypeConverter.printHexBinary(constantsSizeArray);
+        System.out.println("constantsSizeHex = " + constantsSizeHex);
+        int constantsSize = Integer.parseInt(constantsSizeHex, 16) / 8;
+        
+        System.out.println("constantsSize = " + constantsSize + " bytes.");
+
+        //Stores the constants block into the constants array
+        position += 4;
+        constants = new byte[constantsSize];
+        System.arraycopy(bytes, position, constants, 0, constantsSize);
+
+        System.out.println("PASSED STORE CONSTANTS BLOCK");
+
+        //Stores the location of the text in memory
+        position += constantsSize;
+        System.arraycopy(bytes, position, textMemoryAddress, 0, 4);
+
+        System.out.println("PASSED TEXT ADDRESS");
+
+        //Determines the size of the text block
+        position += 4;
+        byte[] textSizeArray = new byte[4];
+
+        System.arraycopy(bytes, position, textSizeArray, 0, 4);
+        //int textSize = ByteBuffer.wrap(textSizeArray).getInt();
+        //int textSize = new BigInteger(textSizeArray).intValue();
+        //textSize /= 8;
+
+        String textSizeHex = javax.xml.bind.DatatypeConverter.printHexBinary(textSizeArray);
+        System.out.println("textSizeHex = " + textSizeHex);
+        int textSize = Integer.parseInt(textSizeHex, 16) / 8;
+        
+        System.out.println("textSize = " + textSize + " bytes.");
+
+        //Stores the text block into the text array
+        position += 4;
+        text = new byte[textSize];
+        System.arraycopy(bytes, position, text, 0, textSize);
+
+        System.out.println("PASSED TEXT BLOCK");
+    }
 
     private void byteInterpreter(byte input) {
         switch (input) {
@@ -68,121 +148,101 @@ public class IJVM implements IJVMInterface {
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("OUT");
                 break;
             case BIPUSH: 
                 currentInstruction = input;
                 programCounter++;
                 
-                out.println("BIPUSH");
                 break;
             case DUP: 
                 currentInstruction = input;
                 programCounter++;
                 
-                out.println("DUP");
                 break;
             case GOTO:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("GOTO");
                 break;
             case IADD:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("IADD");
                 break;
             case IAND:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("IAND");
                 break;
             case IFEQ:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("IFEQ");
                 break;
             case IFLT:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("IFLT");
                 break;
             case IF_ICMPEQ:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("IF ICMPEQ");
                 break;
             case IINC:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("IINC");
                 break;
             case ILOAD:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("ILOAD");
                 break;
             case INVOKEVIRTUAL:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("INVOKEVIRTUAL");
                 break;
             case IOR:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("IOR");
                 break;
             case IRETURN:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("IRETURN");
                 break;
             case ISTORE:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("ISTORE");
                 break;
             case ISUB:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("ISUB");
                 break;
             case LDC_W:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("LDC W");
                 break;
             case POP:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("POP");
                 break;
             case SWAP:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("SWAP");
                 break;
             case WIDE:
                 currentInstruction = input;
                 programCounter++;
 
-                out.println("WIDE");
                 break;
         }
     }
@@ -209,7 +269,7 @@ public class IJVM implements IJVMInterface {
      * @return The current loaded program text as an byte array.
      */
     public byte[] getText() {
-    	return bytes;
+    	return text;
     }
 
     /**
@@ -243,11 +303,11 @@ public class IJVM implements IJVMInterface {
      * In the case of WIDE, perform the whole WIDE_ISTORE or WIDE_ILOAD.
      */
     public void step() {
-        System.out.println("BYTE [" + bytesPosition + "]: " + bytes[bytesPosition]);
+        //System.out.println("BYTE [" + bytesPosition + "]: " + bytes[bytesPosition]);
 
-        byteInterpreter(bytes[bytesPosition]);
+        byteInterpreter(text[textPosition]);
 
-        bytesPosition++;
+        textPosition++;
     }
 
     /**
@@ -255,7 +315,7 @@ public class IJVM implements IJVMInterface {
      */
     public void run() {
         //reads through the bytes.
-        for (int i = bytesPosition; i < bytes.length; i++) {            
+        for (int i = textPosition; i < text.length; i++) {            
             step();
         }
     }
