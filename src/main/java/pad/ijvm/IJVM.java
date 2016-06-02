@@ -24,6 +24,7 @@ public class IJVM implements IJVMInterface {
 	public IJVM(File input) {
         try {
             bytes = new BinaryLoader(input);
+            processor = new Processor();
             textPosition = 0;
         }
         catch(Exception e) {
@@ -38,7 +39,7 @@ public class IJVM implements IJVMInterface {
      * interpreted as a signed integer.
      */
     public int topOfStack() {
-    	return 0;
+    	return processor.getTopOfStack();
     }
 
     /**
@@ -46,8 +47,7 @@ public class IJVM implements IJVMInterface {
      * @return Returns the stack of the current frame as an array of integers.
      */
     public int[] getStackContents() {
-    	int[] temp = new int[1];
-    	return temp;
+    	return processor.getStackContents();
     }
 
     /**

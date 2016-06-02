@@ -1,7 +1,7 @@
 package pad.ijvm;
 
 public class Processor {
-    static final int STACK_SIZE = 256
+    static final int STACK_SIZE = 256;
 
     static final byte NOP = (byte)0x00;
     static final byte OUT = (byte)0xFD;
@@ -26,14 +26,13 @@ public class Processor {
     static final byte WIDE = (byte)0xC4;
 
     private Stack stack;
-    private int programCounter
+    private int programCounter;
     private int stackPointer;
     private byte currentInstruction;
 
-    public void Processor() {
+    public Processor() {
         stack = new Stack(STACK_SIZE);
         programCounter = 0;
-        stackPointer = 0;
         currentInstruction = NOP;
     }
 
@@ -144,8 +143,16 @@ public class Processor {
         }
     }
 
+    public int[] getStackContents() {
+        return stack.getIntegerArray();
+    }
+
+    public int getTopOfStack() {
+        return stack.getTopOfStack().toInteger();
+    }
+
     public int getStackPointer() {
-        return stackPointer;
+        return stack.getStackPointer();
     }
 
     public int getProgramCounter() {
