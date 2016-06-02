@@ -15,7 +15,7 @@ public class Stack {
     	return stack[pos];
     }
 
-    public Wordp[] getWordArray() {
+    public Word[] getWordArray() {
     	return stack;
     }
 }
