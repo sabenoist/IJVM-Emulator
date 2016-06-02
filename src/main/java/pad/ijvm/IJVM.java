@@ -8,13 +8,10 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileInputStream;
 
-import java.nio.file.Files;
-import java.nio.ByteBuffer;
-
-import java.math.BigInteger;
-
 
 public class IJVM implements IJVMInterface {
+    static final byte[] IJVM_HEAD = new byte[] {(byte)0x1D, (byte)0xEA, (byte)0xDF, (byte)0xAD};
+
     static final byte NOP = (byte)0x00;
     static final byte OUT = (byte)0xFD;
     static final byte BIPUSH = (byte)0x10;
@@ -44,6 +41,7 @@ public class IJVM implements IJVMInterface {
 	private PrintStream out;
 
     private int textPosition;
+    private int stackPointer;
 	private int programCounter;
 
 	public IJVM(File input) {
@@ -235,8 +233,13 @@ public class IJVM implements IJVMInterface {
      */
     public void run() {
         //reads through the bytes.
-        for (int i = textPosition; i < bytes.getText().length; i++) {            
-            step();
+        if (bytes.getProgramIdentifier().equals(IJVM_HEAD)) {
+            for (int i = textPosition; i < bytes.getText().length; i++) {            
+                step();
+            }
+        }
+        else {
+            System.err.printf("ERROR: This program is not an IJVM program!");
         }
     }
 
