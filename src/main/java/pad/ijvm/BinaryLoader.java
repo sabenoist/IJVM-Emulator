@@ -99,7 +99,7 @@ public class BinaryLoader {
      * @return The current loaded program identifier as an byte array.
      */
     public byte[] getProgramIdentifier() {
-        return programIdentfier;
+        return programIdentifier;
     }      
 
     /**

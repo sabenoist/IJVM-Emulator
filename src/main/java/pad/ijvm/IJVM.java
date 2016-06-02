@@ -15,7 +15,7 @@ import java.math.BigInteger;
 
 
 public class IJVM implements IJVMInterface {
-	static final byte NOP = (byte)0x00;
+    static final byte NOP = (byte)0x00;
     static final byte OUT = (byte)0xFD;
     static final byte BIPUSH = (byte)0x10;
     static final byte DUP = (byte)0x59;
@@ -37,14 +37,7 @@ public class IJVM implements IJVMInterface {
     static final byte SWAP = (byte)0x5F;
     static final byte WIDE = (byte)0xC4;
 
-    private byte[] bytes;
-    private byte[] constants;
-    private byte[] text;
-
-    private byte[] programMemoryAddress;
-    private byte[] constantsMemoryAddress;
-    private byte[] textMemoryAddress;
-
+    private BinaryLoader bytes;
 	private byte currentInstruction;
 
 	private InputStream in;
@@ -55,15 +48,7 @@ public class IJVM implements IJVMInterface {
 
 	public IJVM(File input) {
         try {
-            bytes = new byte[(int) input.length()];
-            programMemoryAddress = new byte[4];
-            constantsMemoryAddress = new byte[4];
-            textMemoryAddress = new byte[4];
-
-            FileInputStream fileIn = new FileInputStream(input);
-            fileIn.read(bytes);
-            fileIn.close();
-
+            bytes = new BinaryLoader(input);
             textPosition = 0;
 
             programCounter = 0;
@@ -71,48 +56,9 @@ public class IJVM implements IJVMInterface {
         }
         catch(Exception e) {
             System.err.printf("%s\n", e.getMessage());
+            System.exit(1);
         }
-
-        byteBlocksParser();
 	}
-
-    private void byteBlocksParser() {
-        //Stores the magicnumber of the program
-        int position = 0;
-        System.arraycopy(bytes, position, programIdentifier, 0, 4);
-
-        //Stores the location of the constants in memory
-        position += 4; 
-        System.arraycopy(bytes, position, constantsMemoryAddress, 0, 4);
-
-        //Determines the size of the constants data block
-        position += 4;
-        byte[] constantsSizeArray = new byte[4];
-
-        System.arraycopy(bytes, position, constantsSizeArray, 0, 4);
-        int constantsSize = ((constantsSizeArray[0] & 0xFF) << 24) | ((constantsSizeArray[1] & 0xFF) << 16) | ((constantsSizeArray[2] & 0xFF) << 8) | (constantsSizeArray[3] & 0xFF);
-
-        //Stores the constants block into the constants array
-        position += 4;
-        constants = new byte[constantsSize];
-        System.arraycopy(bytes, position, constants, 0, constantsSize);
-
-        //Stores the location of the text in memory
-        position += constantsSize;
-        System.arraycopy(bytes, position, textMemoryAddress, 0, 4);
-
-        //Determines the size of the text data block
-        position += 4;
-        byte[] textSizeArray = new byte[4];
-
-        System.arraycopy(bytes, position, textSizeArray, 0, 4);
-        int textSize = ((textSizeArray[0] & 0xFF) << 24) | ((textSizeArray[1] & 0xFF) << 16) | ((textSizeArray[2] & 0xFF) << 8) | (textSizeArray[3] & 0xFF);
-
-        //Stores the text block into the text array
-        position += 4;
-        text = new byte[textSize];
-        System.arraycopy(bytes, position, text, 0, textSize);
-    }
 
     private void byteInterpreter(byte input) {
         switch (input) {
@@ -243,7 +189,7 @@ public class IJVM implements IJVMInterface {
      * @return The current loaded program text as an byte array.
      */
     public byte[] getText() {
-    	return text;
+    	return bytes.getText();
     }
 
     /**
@@ -279,7 +225,7 @@ public class IJVM implements IJVMInterface {
     public void step() {
         //System.out.println("BYTE [" + bytesPosition + "]: " + bytes[bytesPosition]);
 
-        byteInterpreter(text[textPosition]);
+        byteInterpreter(bytes.getText()[textPosition]);
 
         textPosition++;
     }
@@ -289,7 +235,7 @@ public class IJVM implements IJVMInterface {
      */
     public void run() {
         //reads through the bytes.
-        for (int i = textPosition; i < text.length; i++) {            
+        for (int i = textPosition; i < bytes.getText().length; i++) {            
             step();
         }
     }
