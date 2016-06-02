@@ -73,71 +73,45 @@ public class IJVM implements IJVMInterface {
             System.err.printf("%s\n", e.getMessage());
         }
 
-        //byteBlocksParser();
+        byteBlocksParser();
 	}
 
     private void byteBlocksParser() {
-        //Stores the location of the program in memory
+        //Stores the magicnumber of the program
         int position = 0;
-        System.arraycopy(bytes, position, programMemoryAddress, 0, 4);
-
-        System.out.println("PASSED PROGRAM ADDRESS");
+        System.arraycopy(bytes, position, programIdentifier, 0, 4);
 
         //Stores the location of the constants in memory
         position += 4; 
         System.arraycopy(bytes, position, constantsMemoryAddress, 0, 4);
 
-        System.out.println("PASSED CONSTANTS ADDRESS");
-
-        //Determines the size of the constants block
+        //Determines the size of the constants data block
         position += 4;
         byte[] constantsSizeArray = new byte[4];
 
         System.arraycopy(bytes, position, constantsSizeArray, 0, 4);
-        //int constantsSize = ByteBuffer.wrap(constantsSizeArray).getInt();
-        //int constantsSize = new BigInteger(constantsSizeArray).intValue();
-        //constantsSize /= 8;       
-
-        String constantsSizeHex = javax.xml.bind.DatatypeConverter.printHexBinary(constantsSizeArray);
-        System.out.println("constantsSizeHex = " + constantsSizeHex);
-        int constantsSize = Integer.parseInt(constantsSizeHex, 16) / 8;
-        
-        System.out.println("constantsSize = " + constantsSize + " bytes.");
+        int constantsSize = ((constantsSizeArray[0] & 0xFF) << 24) | ((constantsSizeArray[1] & 0xFF) << 16) | ((constantsSizeArray[2] & 0xFF) << 8) | (constantsSizeArray[3] & 0xFF);
 
         //Stores the constants block into the constants array
         position += 4;
         constants = new byte[constantsSize];
         System.arraycopy(bytes, position, constants, 0, constantsSize);
 
-        System.out.println("PASSED STORE CONSTANTS BLOCK");
-
         //Stores the location of the text in memory
         position += constantsSize;
         System.arraycopy(bytes, position, textMemoryAddress, 0, 4);
 
-        System.out.println("PASSED TEXT ADDRESS");
-
-        //Determines the size of the text block
+        //Determines the size of the text data block
         position += 4;
         byte[] textSizeArray = new byte[4];
 
         System.arraycopy(bytes, position, textSizeArray, 0, 4);
-        //int textSize = ByteBuffer.wrap(textSizeArray).getInt();
-        //int textSize = new BigInteger(textSizeArray).intValue();
-        //textSize /= 8;
-
-        String textSizeHex = javax.xml.bind.DatatypeConverter.printHexBinary(textSizeArray);
-        System.out.println("textSizeHex = " + textSizeHex);
-        int textSize = Integer.parseInt(textSizeHex, 16) / 8;
-        
-        System.out.println("textSize = " + textSize + " bytes.");
+        int textSize = ((textSizeArray[0] & 0xFF) << 24) | ((textSizeArray[1] & 0xFF) << 16) | ((textSizeArray[2] & 0xFF) << 8) | (textSizeArray[3] & 0xFF);
 
         //Stores the text block into the text array
         position += 4;
         text = new byte[textSize];
         System.arraycopy(bytes, position, text, 0, textSize);
-
-        System.out.println("PASSED TEXT BLOCK");
     }
 
     private void byteInterpreter(byte input) {
