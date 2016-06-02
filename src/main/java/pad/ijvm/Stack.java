@@ -10,11 +10,15 @@ public class Stack {
     }
 
     public void incStackPointer(int amount) {
-        stackPointer += amount;
+        if (stackPointer < stack.length - 1) {
+            stackPointer += amount;
+        }
     }
 
     public void decStackPointer(int amount) {
-        stackPointer -= amount;
+        if (stackPointer >= 0) {
+            stackPointer -= amount;
+        }
     }
 
     public void setTopOfStack(Word word) {
@@ -22,7 +26,7 @@ public class Stack {
     }
 
     public Word getTopOfStack() {
-    	return stack[stackPointer];
+    	return stack[stackPointer - 1];
     }
 
     public int getStackPointer() {
@@ -37,7 +41,7 @@ public class Stack {
         int[] result = new int[stackPointer];
 
         for(int i = 0; i < stackPointer; i++) {
-            result[i] = stack[i + 1].toInteger();
+            result[i] = stack[i].toInteger();
         }
 
         return result;

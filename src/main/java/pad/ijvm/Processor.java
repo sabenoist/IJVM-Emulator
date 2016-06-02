@@ -36,7 +36,16 @@ public class Processor {
         currentInstruction = NOP;
     }
 
-    public void byteInterpreter(byte input) {
+    public void wordProcessor(Word word) {
+        for (int i = 0; i < 4; i++) {
+            byteInterpreter(word, i);
+        }
+    }
+
+
+    public void byteInterpreter(Word word, int bytePos) {
+        byte input = word.getByte(bytePos);
+
         switch (input) {
             case NOP: 
                 break; //do nothing
@@ -47,6 +56,7 @@ public class Processor {
                 break;
             case BIPUSH: 
                 currentInstruction = input;
+                
                 programCounter++;
                 
                 break;
