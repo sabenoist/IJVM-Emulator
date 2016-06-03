@@ -1,5 +1,7 @@
 package pad.ijvm;
 
+import java.nio.ByteBuffer;
+
 public class Processor {
     static final int STACK_SIZE = 256;
 
@@ -27,7 +29,6 @@ public class Processor {
 
     private Stack stack;
     private int programCounter;
-    private int stackPointer;
     private byte currentInstruction;
 
     public Processor() {
@@ -36,117 +37,113 @@ public class Processor {
         currentInstruction = NOP;
     }
 
-    public void wordProcessor(Word word) {
-        for (int i = 0; i < 4; i++) {
-            byteInterpreter(word, i);
-        }
+    public void bipush(Word word) {
+        stack.setTopOfStack(word);
+        stack.incStackPointer;
     }
 
+    public Word pop() {
+        Word word = stack.getTopofStack();
+        stack.decStackPointer;
 
-    public void byteInterpreter(Word word, int bytePos) {
-        byte input = word.getByte(bytePos);
+        return word;
+    }
+
+    public void byteInterpreter(byte[] text) {
+        byte input = text[programCounter];
+        currentInstruction = input;
 
         switch (input) {
             case NOP: 
                 break; //do nothing
             case OUT: 
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case BIPUSH: 
-                currentInstruction = input;
-                
-                programCounter++;
-                
+                //bipush(new Word(new byte[(byte)0, (byte)0, (byte)0, text[programCounter + 1]]));
+
+                int var1 = (text[programCounter + 1] & 0xFF);
+                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(var1).array()));
+
+                programCounter += 2;
+
                 break;
             case DUP: 
-                currentInstruction = input;
                 programCounter++;
                 
                 break;
             case GOTO:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case IADD:
-                currentInstruction = input;
+                Word var1 = pop();
+                Word var2 = pop();
+
+                int sum = var1.toInteger() + var2.toInteger();
+                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(sum).array()));
+
                 programCounter++;
 
                 break;
             case IAND:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case IFEQ:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case IFLT:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case IF_ICMPEQ:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case IINC:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case ILOAD:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case INVOKEVIRTUAL:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case IOR:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case IRETURN:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case ISTORE:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case ISUB:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case LDC_W:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case POP:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case SWAP:
-                currentInstruction = input;
                 programCounter++;
 
                 break;
             case WIDE:
-                currentInstruction = input;
                 programCounter++;
 
                 break;

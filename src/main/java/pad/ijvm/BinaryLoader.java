@@ -18,12 +18,18 @@ public class BinaryLoader {
     private byte[] constantsMemoryAddress;
     private byte[] textMemoryAddress;
 
+    private int constantsPosition;
+    private int textPosition;
+
 	public BinaryLoader(File input) throws Exception {
         bytes = new byte[(int) input.length()];
             
         programIdentifier = new byte[4];
         constantsMemoryAddress = new byte[4];
         textMemoryAddress = new byte[4];
+
+        constantsPosition = 0;
+        textPosition = 0;
 
         FileInputStream fileIn = new FileInputStream(input);
         fileIn.read(bytes);

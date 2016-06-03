@@ -89,7 +89,7 @@ public class IJVM implements IJVMInterface {
      * In the case of WIDE, perform the whole WIDE_ISTORE or WIDE_ILOAD.
      */
     public void step() {
-        processor.byteInterpreter(bytes.getText()[textPosition]);
+        processor.byteInterpreter(bytes.getText());
 
         textPosition++;
     }
@@ -100,7 +100,7 @@ public class IJVM implements IJVMInterface {
     public void run() {
         //reads through the bytes.
         if (bytes.getProgramIdentifier().equals(IJVM_HEAD)) {
-            for (int i = textPosition; i < bytes.getText().length; i++) {            
+            while (processor.getProgramCounter() < bytes.getText().length) {
                 step();
             }
         }
