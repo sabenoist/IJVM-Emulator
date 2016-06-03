@@ -4,7 +4,7 @@ public class Word {
 
 	private byte[] bytes;
 
-    public void Word(byte[] input) {
+    public Word(byte[] input) {
     	bytes = input;
     }
 

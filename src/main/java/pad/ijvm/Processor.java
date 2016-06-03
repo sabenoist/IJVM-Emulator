@@ -1,6 +1,7 @@
 package pad.ijvm;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Processor {
     static final int STACK_SIZE = 256;
@@ -30,6 +31,7 @@ public class Processor {
     private Stack stack;
     private int programCounter;
     private byte currentInstruction;
+    private Word popRegister;
 
     public Processor() {
         stack = new Stack(STACK_SIZE);
@@ -39,12 +41,12 @@ public class Processor {
 
     public void bipush(Word word) {
         stack.setTopOfStack(word);
-        stack.incStackPointer;
+        stack.incStackPointer(1);
     }
 
     public Word pop() {
-        Word word = stack.getTopofStack();
-        stack.decStackPointer;
+        Word word = stack.getTopOfStack();
+        stack.decStackPointer(1);
 
         return word;
     }
@@ -61,10 +63,8 @@ public class Processor {
 
                 break;
             case BIPUSH: 
-                //bipush(new Word(new byte[(byte)0, (byte)0, (byte)0, text[programCounter + 1]]));
-
-                int var1 = (text[programCounter + 1] & 0xFF);
-                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(var1).array()));
+                int var = (text[programCounter + 1] & 0xFF);
+                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(var).array()));
 
                 programCounter += 2;
 
@@ -78,10 +78,10 @@ public class Processor {
 
                 break;
             case IADD:
-                Word var1 = pop();
-                Word var2 = pop();
+                Word add1 = pop();
+                Word add2 = pop();
 
-                int sum = var1.toInteger() + var2.toInteger();
+                int sum = add1.toInteger() + add2.toInteger();
                 bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(sum).array()));
 
                 programCounter++;
@@ -136,10 +136,18 @@ public class Processor {
 
                 break;
             case POP:
+                popRegister = pop();
+
                 programCounter++;
 
                 break;
             case SWAP:
+                Word swap1 = pop();
+                Word swap2 = pop();
+
+                bipush(swap1);
+                bipush(swap2);
+
                 programCounter++;
 
                 break;
