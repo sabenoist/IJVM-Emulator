@@ -31,7 +31,9 @@ public class Processor {
     private Stack stack;
     private int programCounter;
     private byte currentInstruction;
+    
     private Word popRegister;
+    private Word topOfStackRegister;
 
     public Processor() {
         stack = new Stack(STACK_SIZE);
@@ -156,6 +158,8 @@ public class Processor {
 
                 break;
         }
+
+        topOfStackRegister = stack.getTopOfStack();
     }
 
     public int[] getStackContents() {
