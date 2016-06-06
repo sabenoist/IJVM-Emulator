@@ -19,7 +19,7 @@ public class Processor {
     static final byte IINC = (byte)0x84;
     static final byte ILOAD = (byte)0x15;
     static final byte INVOKEVIRTUAL = (byte)0xB6;
-    static final byte IOR = (byte)0x80;
+    static final byte IOR = (byte)0xB0;
     static final byte IRETURN = (byte)0xAC;
     static final byte ISTORE = (byte)0x36;
     static final byte ISUB = (byte)0x64;
@@ -89,6 +89,11 @@ public class Processor {
 
                 break;
             case IAND:
+                int iand1 = pop().toInteger();
+                int iand2 = pop().toInteger();
+
+                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(iand1 & iand2).array()));
+
                 programCounter++;
 
                 break;
@@ -117,6 +122,11 @@ public class Processor {
 
                 break;
             case IOR:
+                int ior1 = pop().toInteger();
+                int ior2 = pop().toInteger();
+
+                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(ior1 | ior2).array()));
+
                 programCounter++;
 
                 break;
@@ -129,6 +139,14 @@ public class Processor {
 
                 break;
             case ISUB:
+                Word sub1 = pop();
+                Word sub2 = pop();
+
+                int subResult = sub2.toInteger() - sub1.toInteger();
+                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(subResult).array()));
+
+                programCounter++;
+
                 programCounter++;
 
                 break;
