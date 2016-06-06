@@ -32,7 +32,6 @@ public class Processor {
     private int programCounter;
     private byte currentInstruction;
     
-    private Word popRegister;
     private Word topOfStackRegister;
 
     public Processor() {
@@ -65,7 +64,7 @@ public class Processor {
 
                 break;
             case BIPUSH: 
-                int var = (text[programCounter + 1] & 0xFF);
+                int var = (text[programCounter + 1]);
                 bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(var).array()));
 
                 programCounter += 2;
@@ -138,7 +137,7 @@ public class Processor {
 
                 break;
             case POP:
-                popRegister = pop();
+                stack.decStackPointer(1);
 
                 programCounter++;
 
