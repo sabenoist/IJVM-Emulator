@@ -18,7 +18,7 @@ public class Stack {
     }
 
     public void decStackPointer(int amount) {
-        if (stackPointer >= 0) {
+        if ((stackPointer - amount) >= 1) {
             stackPointer -= amount;
         }
     }
@@ -28,6 +28,7 @@ public class Stack {
     }
 
     public Word getTopOfStack() {
+        //System.out.println("            StackPointer = " + (stackPointer - 1));
     	return stack[stackPointer - 1];
     }
 
@@ -52,6 +53,25 @@ public class Stack {
 
         for(int i = 0; i < stackPointer; i++) {
             result[i] = stack[i].toInteger();
+        }
+
+        return result;
+    }
+
+    public String toString() {
+        int pos = 0;
+        String result = "";
+
+        for (int i = 0; i < stack.length; i++) {
+            if (pos == 0) {
+                result += i + ".    ";
+            }
+
+            result += stack[i].toString() + "    ";
+
+            if (pos == 7) {
+                result += "\n";
+            }
         }
 
         return result;

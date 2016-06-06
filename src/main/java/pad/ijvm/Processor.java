@@ -3,6 +3,8 @@ package pad.ijvm;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import java.io.PrintStream;
+
 public class Processor {
     static final int STACK_SIZE = 256;
 
@@ -28,19 +30,19 @@ public class Processor {
     static final byte SWAP = (byte)0x5F;
     static final byte WIDE = (byte)0xC4;
 
+    private PrintStream out;
+
     private Stack stack;
     private int programCounter;
     private byte currentInstruction;
     
-    private Word topOfStackRegister;
-
     public Processor() {
         stack = new Stack(STACK_SIZE);
         programCounter = 0;
         currentInstruction = NOP;
     }
 
-    public void bipush(Word word) {
+    public void biPush(Word word) {
         stack.setTopOfStack(word);
         stack.incStackPointer(1);
     }
@@ -52,6 +54,10 @@ public class Processor {
         return word;
     }
 
+    public void goTo(int offset, byte[] text) {
+        programCounter += offset;
+    }
+
     public void byteInterpreter(byte[] text) {
         byte input = text[programCounter];
         currentInstruction = input;
@@ -60,22 +66,25 @@ public class Processor {
             case NOP: 
                 break; //do nothing
             case OUT: 
+                System.out.println(pop().toInteger());
                 programCounter++;
 
                 break;
             case BIPUSH: 
-                int var = (text[programCounter + 1]);
-                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(var).array()));
+                int var = text[programCounter + 1];
+                biPush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(var).array()));
 
                 programCounter += 2;
 
                 break;
             case DUP: 
+                biPush(stack.getTopOfStack());
+
                 programCounter++;
                 
                 break;
             case GOTO:
-                programCounter++;
+                goTo((text[programCounter + 1] << 8) | text[programCounter + 2], text);
 
                 break;
             case IADD:
@@ -83,7 +92,7 @@ public class Processor {
                 Word add2 = pop();
 
                 int sum = add1.toInteger() + add2.toInteger();
-                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(sum).array()));
+                biPush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(sum).array()));
 
                 programCounter++;
 
@@ -92,21 +101,43 @@ public class Processor {
                 int iand1 = pop().toInteger();
                 int iand2 = pop().toInteger();
 
-                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(iand1 & iand2).array()));
+                biPush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(iand1 & iand2).array()));
 
                 programCounter++;
 
                 break;
             case IFEQ:
-                programCounter++;
+                int ifeq = pop().toInteger();
+
+                if (ifeq == 0) {
+                    goTo((text[programCounter + 1] << 8) | text[programCounter + 2], text);
+                }
+                else {
+                    programCounter += 3;
+                }
 
                 break;
             case IFLT:
-                programCounter++;
+                int iflt = pop().toInteger();
+
+                if (iflt < 0) {
+                    goTo((text[programCounter + 1] << 8) | text[programCounter + 2], text);
+                }
+                else {
+                    programCounter += 3;
+                }
 
                 break;
             case IF_ICMPEQ:
-                programCounter++;
+                int if_icmpeq1 = pop().toInteger();
+                int if_icmpeq2 = pop().toInteger();
+
+                if (if_icmpeq1 == if_icmpeq2) {
+                    goTo((text[programCounter + 1] << 8) | text[programCounter + 2], text);
+                }
+                else {
+                    programCounter += 3;
+                }
 
                 break;
             case IINC:
@@ -125,7 +156,7 @@ public class Processor {
                 int ior1 = pop().toInteger();
                 int ior2 = pop().toInteger();
 
-                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(ior1 | ior2).array()));
+                biPush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(ior1 | ior2).array()));
 
                 programCounter++;
 
@@ -143,10 +174,8 @@ public class Processor {
                 Word sub2 = pop();
 
                 int subResult = sub2.toInteger() - sub1.toInteger();
-                bipush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(subResult).array()));
-
-                programCounter++;
-
+                biPush(new Word(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(subResult).array()));
+            
                 programCounter++;
 
                 break;
@@ -164,8 +193,8 @@ public class Processor {
                 Word swap1 = pop();
                 Word swap2 = pop();
 
-                bipush(swap1);
-                bipush(swap2);
+                biPush(swap1);
+                biPush(swap2);
 
                 programCounter++;
 
@@ -174,9 +203,11 @@ public class Processor {
                 programCounter++;
 
                 break;
-        }
+            default:
+                programCounter++;
 
-        topOfStackRegister = stack.getTopOfStack();
+                break;
+        }
     }
 
     public int[] getStackContents() {
@@ -197,5 +228,9 @@ public class Processor {
 
     public byte getCurrentInstruction() {
         return currentInstruction;
+    }
+
+    public void setOutput(PrintStream output) {
+        out = output;
     }
 }
