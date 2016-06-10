@@ -18,8 +18,6 @@ public class IJVM implements IJVMInterface {
 	private InputStream in;
 	private PrintStream out;
 
-    private byte currentInstruction;
-
 	public IJVM(File input) {
         try {
             bytes = new BinaryLoader(input);
@@ -70,7 +68,7 @@ public class IJVM implements IJVMInterface {
      * @return Returns the i:th local variable of the current frame.
      */
     public int getLocalVariable(int i) {
-    	return 0;
+    	return processor.getLocalVariable(i);
     }
 
     /**
@@ -79,7 +77,7 @@ public class IJVM implements IJVMInterface {
      * @return The constant at location i in the constant pool.
      */
     public int getConstant(int i) {
-    	return 0;
+    	return bytes.getConstants()[i * 4];
     }
 
     /**
@@ -95,13 +93,8 @@ public class IJVM implements IJVMInterface {
      */
     public void run() {
         //reads through the bytes.
-        if (bytes.getProgramIdentifier().equals(IJVM_HEAD)) {
-            while (processor.getProgramCounter() < bytes.getText().length) {
-                step();
-            }
-        }
-        else {
-            System.err.printf("ERROR: This program is not an IJVM program!");
+        while (processor.getProgramCounter() < bytes.getText().length) {
+            step();
         }
     }
 
@@ -109,7 +102,7 @@ public class IJVM implements IJVMInterface {
      * @return The value of the current instruction represented as a byte.
      */
     public byte getInstruction() {
-    	return currentInstruction;
+    	return processor.getCurrentInstruction();
     }
 
     /**

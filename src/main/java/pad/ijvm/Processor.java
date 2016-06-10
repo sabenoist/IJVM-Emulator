@@ -1,5 +1,7 @@
 package pad.ijvm;
 
+import java.util.LinkedList;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -31,6 +33,8 @@ public class Processor {
     private PrintStream out;
     private BinaryLoader bytes;
     private Stack stack;
+    private Word[] localVariables;
+    private Frame[] frames;
 
     private int programCounter;
     private byte currentInstruction;
@@ -38,6 +42,9 @@ public class Processor {
     public Processor(BinaryLoader bLoader) {
         bytes = bLoader;
         stack = new Stack();
+        localVariables = new Word[256];
+        frames = new Frame[256];
+
         programCounter = 0;
         currentInstruction = NOP;
     }
@@ -62,7 +69,7 @@ public class Processor {
         int var = pop().toInteger();
 
         if (var == 0) {
-            goTo(getShortAsInt(programCounter + 1));
+            goTo(getShortAsInt(programCounter + 1, bytes.getText()));
         }
         else {
             programCounter += 3;
@@ -73,19 +80,19 @@ public class Processor {
         int var = pop().toInteger();
 
         if (var < 0) {
-            goTo(getShortAsInt(programCounter + 1));
+            goTo(getShortAsInt(programCounter + 1, bytes.getText()));
         }
         else {
             programCounter += 3;
         }
     }
 
-    public void if_icmpeq() {
+    public void ifIcmpeq() {
         int var1 = pop().toInteger();
         int var2 = pop().toInteger();
 
         if (var1 == var2) {
-            goTo(getShortAsInt(programCounter + 1));
+            goTo(getShortAsInt(programCounter + 1, bytes.getText()));
         }
         else {
             programCounter += 3;
@@ -130,8 +137,46 @@ public class Processor {
         biPush(var2);
     }
 
-    public int getShortAsInt(int pos) {
-        return ((bytes.getText()[pos] << 8) | bytes.getText()[pos + 1]);
+    public void ldcW() {
+        int position = getUnsignedShortAsInt(programCounter + 1, bytes.getText()) * 4;
+
+        byte[] constant = new byte[4];
+        System.arraycopy(bytes.getConstants(), position, constant, 0, 4);
+
+        biPush(new Word(constant));
+    }
+
+    public void iload() {
+        int position = (bytes.getText()[programCounter + 1] & 0xFF);
+
+        biPush(localVariables[position]);
+    }
+
+    public void istore() {
+        int position = (bytes.getText()[programCounter + 1] & 0xFF);
+
+        localVariables[position] = pop();
+    }
+
+    public void iinc() {
+        int position = bytes.getText()[programCounter + 1];
+       
+        int value1 = localVariables[position].toInteger();
+        int value2 = bytes.getText()[programCounter + 2];
+
+        localVariables[position] = new Word(getIntAsBytes(value1 + value2));
+    }
+
+    public int getShortAsInt(int pos, byte[] bytes) {
+        return ((bytes[pos] << 8) | bytes[pos + 1]);
+    }
+
+    public int getUnsignedShortAsInt(int pos, byte[] bytes) {
+        return (((bytes[pos] & 0xFF) << 8) | (bytes[pos + 1] & 0xFF));
+    }
+
+    public int getWordAsInt(int pos, byte[] bytes) {
+        return ((bytes[pos] & 0xFF) << 24) | ((bytes[pos + 1] & 0xFF) << 16) | ((bytes[pos + 2] & 0xFF) << 8) | (bytes[pos + 3] & 0xFF);
     }
 
     public byte[] getIntAsBytes(int var) {
@@ -163,7 +208,7 @@ public class Processor {
                 
                 break;
             case GOTO:
-                goTo(getShortAsInt(programCounter + 1));
+                goTo(getShortAsInt(programCounter + 1, bytes.getText()));
 
                 break;
             case IADD:
@@ -185,15 +230,17 @@ public class Processor {
 
                 break;
             case IF_ICMPEQ:
-                if_icmpeq();
+                ifIcmpeq();
 
                 break;
             case IINC:
-                programCounter++;
+                iinc();
+                programCounter += 3;
 
                 break;
             case ILOAD:
-                programCounter++;
+                iload();
+                programCounter += 2;
 
                 break;
             case INVOKEVIRTUAL:
@@ -210,7 +257,8 @@ public class Processor {
 
                 break;
             case ISTORE:
-                programCounter++;
+                istore();
+                programCounter += 2;
 
                 break;
             case ISUB:
@@ -219,7 +267,8 @@ public class Processor {
 
                 break;
             case LDC_W:
-                programCounter++;
+                ldcW();
+                programCounter += 3;
 
                 break;
             case POP:
@@ -261,6 +310,10 @@ public class Processor {
 
     public byte getCurrentInstruction() {
         return currentInstruction;
+    }
+
+    public int getLocalVariable(int i) {
+        return localVariables[i].toInteger();
     }
 
     public void setOutput(PrintStream output) {
