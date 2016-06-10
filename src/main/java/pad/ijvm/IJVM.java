@@ -18,14 +18,12 @@ public class IJVM implements IJVMInterface {
 	private InputStream in;
 	private PrintStream out;
 
-    private int textPosition;
     private byte currentInstruction;
 
 	public IJVM(File input) {
         try {
             bytes = new BinaryLoader(input);
-            processor = new Processor();
-            textPosition = 0;
+            processor = new Processor(bytes);
         }
         catch(Exception e) {
             System.err.printf("%s\n", e.getMessage());
@@ -89,9 +87,7 @@ public class IJVM implements IJVMInterface {
      * In the case of WIDE, perform the whole WIDE_ISTORE or WIDE_ILOAD.
      */
     public void step() {
-        processor.byteInterpreter(bytes.getText());
-
-        textPosition++;
+        processor.interpretTextByte();
     }
 
     /**

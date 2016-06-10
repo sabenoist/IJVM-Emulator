@@ -1,24 +1,34 @@
 package pad.ijvm;
 
 public class Stack {
+    static final int INIT_STACK_SIZE = 256;
+
 	private Word[] stack;
     private int stackPointer;
     private int basePointer;
 
-    public Stack(int size) {
-    	stack = new Word[size];
+    public Stack() {
+    	stack = new Word[INIT_STACK_SIZE];
         stackPointer = 0;
         basePointer = 0;
     }
 
+    public void doubleStackSize() {
+        Word[] newStack = new Word[stack.length * 2];
+
+        System.arraycopy(stack, 0, newStack, 0, stack.length);
+        stack = newStack;
+    }
+
     public void incStackPointer(int amount) {
-        if (stackPointer < stack.length - 1) {
-            stackPointer += amount;
+        if (stackPointer >= stack.length - 1) {
+            doubleStackSize();
         }
+        stackPointer++;
     }
 
     public void decStackPointer(int amount) {
-        if ((stackPointer - amount) >= 1) {
+        if ((stackPointer - amount) > 0) {
             stackPointer -= amount;
         }
     }
@@ -28,7 +38,6 @@ public class Stack {
     }
 
     public Word getTopOfStack() {
-        //System.out.println("            StackPointer = " + (stackPointer - 1));
     	return stack[stackPointer - 1];
     }
 
