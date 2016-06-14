@@ -111,7 +111,7 @@ public class IJVM implements IJVMInterface {
      */
     public void setOutput(PrintStream output) {
     	out = output;
-        processor.setOutput(out);
+        processor.setOutput(output);
     }
 
     /**

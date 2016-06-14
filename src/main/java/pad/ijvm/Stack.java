@@ -5,12 +5,10 @@ public class Stack {
 
 	private Word[] stack;
     private int stackPointer;
-    private int basePointer;
 
     public Stack() {
     	stack = new Word[INIT_STACK_SIZE];
         stackPointer = 0;
-        basePointer = 0;
     }
 
     public void doubleStackSize() {
@@ -39,14 +37,6 @@ public class Stack {
 
     public Word getTopOfStack() {
     	return stack[stackPointer - 1];
-    }
-
-    public int getBasePointer() {
-        return basePointer;
-    }
-
-    public void setBasePointer(int value) {
-        basePointer = value;
     }
 
     public int getStackPointer() {
