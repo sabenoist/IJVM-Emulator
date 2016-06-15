@@ -35,14 +35,17 @@ public class Processor {
     private FrameList frames;
 
     private byte currentInstruction;
+    private boolean running;
     
     public Processor(BinaryLoader bLoader) {
+        currentInstruction = NOP;
+        running = false;
+
         bytes = bLoader;
+        out = System.out;
+        
         frames = new FrameList();
         frames.addFrame(new Frame());
-
-        currentInstruction = NOP;
-        out = System.out;
     }
 
     public void biPush(Word word) {
@@ -169,6 +172,10 @@ public class Processor {
         frames.setLocalVariable(position, result);
     }
 
+    public void out() {
+        out.print((char) pop().toInteger());
+    }
+
     public int getShortAsInt(int pos, byte[] bytes) {
         return ((bytes[pos] << 8) | bytes[pos + 1]);
     }
@@ -194,8 +201,7 @@ public class Processor {
             case NOP: 
                 break; //do nothing
             case OUT: 
-                int value = pop().toInteger();
-                out.print((char) value);
+                out();
 
                 frames.incProgramCounter();
 
@@ -295,6 +301,14 @@ public class Processor {
 
                 break;
         }
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void setRunning(boolean bool) {
+        running = bool;
     }
 
     public int[] getStackContents() {

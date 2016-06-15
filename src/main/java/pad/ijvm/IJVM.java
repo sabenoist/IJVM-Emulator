@@ -10,13 +10,10 @@ import java.io.FileInputStream;
 
 
 public class IJVM implements IJVMInterface {
-    static final byte[] IJVM_HEAD = new byte[] {(byte)0x1D, (byte)0xEA, (byte)0xDF, (byte)0xAD};
-
     private BinaryLoader bytes;
     private Processor processor;
 
 	private InputStream in;
-	private PrintStream out;
 
 	public IJVM(File input) {
         try {
@@ -92,8 +89,9 @@ public class IJVM implements IJVMInterface {
      * Run the vm with the current state until the machine halts.
      */
     public void run() {
-        //reads through the bytes.
-        while (processor.getProgramCounter() < bytes.getText().length) {
+        processor.setRunning(true);
+
+        while (processor.isRunning() && (processor.getProgramCounter() < bytes.getText().length)) {
             step();
         }
     }
@@ -110,7 +108,6 @@ public class IJVM implements IJVMInterface {
      * @param out, PrintStream to be used for OUT instruction.
      */
     public void setOutput(PrintStream output) {
-    	out = output;
         processor.setOutput(output);
     }
 
