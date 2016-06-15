@@ -32,6 +32,14 @@ public class FrameList {
 		return framePointer;
 	}
 
+	public void incFramePointer() {
+		framePointer++;
+	}
+
+	public void decFramePointer() {
+		framePointer--;
+	}
+
 	public int getProgramCounter() {
 		return frames[framePointer].getProgramCounter();
 	}

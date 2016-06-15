@@ -205,6 +205,29 @@ public class Processor {
         frames.setLocalVariable(position, pop());
     }
 
+    public void ireturn() {
+        if (frames.getFramePointer() == 0) {
+            running = false;
+        }
+
+        else {
+            Word returnValue = pop();
+            
+            frames.decFramePointer();
+            frames.getStack().decStackPointer(1);
+            bipush(returnValue);
+        }
+    }
+
+    public void invokevirtual() {
+        ldcW();
+        int newProgramCounter = pop().toInteger();
+        
+        frames.addFrame(new Frame());
+        frames.incFramePointer();
+        frames.setProgramCounter(newProgramCounter);
+    }
+
     public int getShortAsInt(int pos, byte[] bytes) {
         return ((bytes[pos] << 8) | bytes[pos + 1]);
     }
@@ -284,7 +307,7 @@ public class Processor {
 
                 break;
             case INVOKEVIRTUAL:
-                frames.incProgramCounter();
+                
 
                 break;
             case IOR:
@@ -293,6 +316,7 @@ public class Processor {
 
                 break;
             case IRETURN:
+                ireturn();
                 frames.incProgramCounter();
 
                 break;
