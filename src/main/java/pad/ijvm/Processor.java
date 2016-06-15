@@ -42,6 +42,7 @@ public class Processor {
         frames.addFrame(new Frame());
 
         currentInstruction = NOP;
+        out = System.out;
     }
 
     public void biPush(Word word) {
@@ -193,7 +194,9 @@ public class Processor {
             case NOP: 
                 break; //do nothing
             case OUT: 
-                System.out.println(pop().toInteger());
+                int value = pop().toInteger();
+                out.print((char) value);
+
                 frames.incProgramCounter();
 
                 break;
