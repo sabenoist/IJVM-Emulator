@@ -176,6 +176,35 @@ public class Processor {
         out.print((char) pop().toInteger());
     }
 
+    public void wide() {
+        int programCounter = frames.getProgramCounter();
+
+        switch(bytes.getText()[programCounter + 1]) {
+            case ILOAD:
+                wideIload();
+
+                break;
+            case ISTORE:
+                wideIstore();
+
+                break;
+        } 
+    }
+
+    public void wideIload() {
+        int programCounter = frames.getProgramCounter();
+        int position = getUnsignedShortAsInt(programCounter + 2, bytes.getText());
+
+        biPush(frames.getLocalVariable(position));
+    }
+
+    public void wideIstore() {
+        int programCounter = frames.getProgramCounter();
+        int position = getUnsignedShortAsInt(programCounter + 2, bytes.getText());
+
+        frames.setLocalVariable(position, pop());
+    }
+
     public int getShortAsInt(int pos, byte[] bytes) {
         return ((bytes[pos] << 8) | bytes[pos + 1]);
     }
@@ -293,7 +322,8 @@ public class Processor {
 
                 break;
             case WIDE:
-                frames.incProgramCounter();
+                wide();
+                frames.incProgramCounter(4);
 
                 break;
             default:
