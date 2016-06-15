@@ -214,8 +214,8 @@ public class Processor {
             Word returnValue = pop();
             
             frames.decFramePointer();
-            frames.getStack().decStackPointer(1);
-            bipush(returnValue);
+            frames.getStack().decStackPointer(1); //to overwrite the objref
+            biPush(returnValue);
         }
     }
 
@@ -223,6 +223,9 @@ public class Processor {
         ldcW();
         int newProgramCounter = pop().toInteger();
         
+        Word objref = new Word(getIntAsBytes(frames.getFramePointer() + 1));
+        biPush(objref);
+
         frames.addFrame(new Frame());
         frames.incFramePointer();
         frames.setProgramCounter(newProgramCounter);
@@ -251,6 +254,8 @@ public class Processor {
 
         switch (input) {
             case NOP: 
+                frames.incProgramCounter();
+
                 break; //do nothing
             case OUT: 
                 out();
@@ -307,7 +312,7 @@ public class Processor {
 
                 break;
             case INVOKEVIRTUAL:
-                
+                invokevirtual();
 
                 break;
             case IOR:
