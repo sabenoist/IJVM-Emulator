@@ -29,6 +29,7 @@ public class Processor {
     static final byte POP = (byte)0x57;
     static final byte SWAP = (byte)0x5F;
     static final byte WIDE = (byte)0xC4;
+    static final byte HALT = (byte)0xFF;
 
     private PrintStream out;
     private BinaryLoader bytes;
@@ -222,13 +223,32 @@ public class Processor {
     public void invokevirtual() {
         ldcW();
         int newProgramCounter = pop().toInteger();
-        
-        Word objref = new Word(getIntAsBytes(frames.getFramePointer() + 1));
-        biPush(objref);
+        int argumentsAmount = getUnsignedShortAsInt(newProgramCounter, bytes.getText());
+        int localVariablesAmount = getUnsignedShortAsInt(newProgramCounter + 2, bytes.getText());
 
+        //store the arguments in a buffer
+        Word[] argsBuffer = new Word[argumentsAmount];
+        for (int i = argumentsAmount - 1; i >= 0; i--) {
+            argsBuffer[i] = pop();
+        }
+        
+        frames.incProgramCounter(3);
+
+        //switch to new frame
         frames.addFrame(new Frame());
         frames.incFramePointer();
-        frames.setProgramCounter(newProgramCounter);
+
+        //store the parameters in the LocalVariables
+        for (int i = 0; i < argumentsAmount; i++) {
+            frames.setLocalVariable(i, argsBuffer[i]);
+        }
+
+        //continue the program from the first instruction in the method
+        frames.setProgramCounter(newProgramCounter + 4);
+    }
+
+    public void halt() {
+        running = false;
     }
 
     public int getShortAsInt(int pos, byte[] bytes) {
@@ -353,6 +373,11 @@ public class Processor {
             case WIDE:
                 wide();
                 frames.incProgramCounter(4);
+
+                break;
+            case HALT:
+                halt();
+                frames.incProgramCounter();
 
                 break;
             default:
