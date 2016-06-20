@@ -215,7 +215,7 @@ public class Processor {
             Word returnValue = pop();
             
             frames.decFramePointer();
-            frames.getStack().decStackPointer(1); //to overwrite the objref
+            //frames.getStack().decStackPointer(1); //to overwrite the objref
             biPush(returnValue);
         }
     }
@@ -226,10 +226,12 @@ public class Processor {
         int argumentsAmount = getUnsignedShortAsInt(newProgramCounter, bytes.getText());
         int localVariablesAmount = getUnsignedShortAsInt(newProgramCounter + 2, bytes.getText());
 
+        System.out.println("argumentsAmount = " + argumentsAmount);
         //store the arguments in a buffer
         Word[] argsBuffer = new Word[argumentsAmount];
         for (int i = argumentsAmount - 1; i >= 0; i--) {
             argsBuffer[i] = pop();
+            System.out.println("parameter " + i + " = " + argsBuffer[i].toInteger());
         }
         
         frames.incProgramCounter(3);

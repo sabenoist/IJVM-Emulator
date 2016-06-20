@@ -1,0 +1,56 @@
+.constant
+c1 0x00
+c2 0x01
+c3 0x02
+OBJREF 100
+.end-constant
+
+.main
+
+.var
+var1
+var2
+var3
+var4
+.end-var
+
+L1:	BIPUSH 0x31
+	ISTORE var1
+    BIPUSH 0x30
+	ISTORE var2
+	BIPUSH 0x01
+	ISTORE var3
+	BIPUSH 0x04
+	ISTORE var4
+    LDC_W OBJREF
+	ILOAD var1
+	ILOAD var2
+	ILOAD var3
+	ILOAD var4
+	INVOKEVIRTUAL methodNew
+	OUT
+	
+.end-main
+
+.method methodNew(var1, var2, var3, var4)
+
+.var
+result
+.end-var
+
+P1:	BIPUSH 0x00
+	ISTORE result
+	ILOAD var1
+	OUT
+	ILOAD var2
+	OUT
+	ILOAD var3
+	OUT
+	ILOAD var4
+	OUT
+	BIPUSH 0x55
+	DUP
+	ISTORE result
+	IRETURN
+
+.end-method
