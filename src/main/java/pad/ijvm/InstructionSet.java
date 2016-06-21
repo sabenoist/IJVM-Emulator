@@ -2,12 +2,11 @@ package pad.ijvm;
 
 
 public class InstructionSet {
-    static final byte NOP = (byte)0x00;
-    static final byte OUT = (byte)0xFD;
     static final byte BIPUSH = (byte)0x10;
     static final byte DUP = (byte)0x59;
     static final byte ERR = (byte)0xFE;
     static final byte GOTO = (byte)0xA7;
+    static final byte HALT = (byte)0xFF;
     static final byte IADD = (byte)0x60;
     static final byte IAND = (byte)0x7E;
     static final byte IFEQ = (byte)0x99;
@@ -22,8 +21,9 @@ public class InstructionSet {
     static final byte ISTORE = (byte)0x36;
     static final byte ISUB = (byte)0x64;
     static final byte LDC_W = (byte)0x13;
+    static final byte NOP = (byte)0x00;
+    static final byte OUT = (byte)0xFD;
     static final byte POP = (byte)0x57;
     static final byte SWAP = (byte)0x5F;
     static final byte WIDE = (byte)0xC4;
-    static final byte HALT = (byte)0xFF;
 }

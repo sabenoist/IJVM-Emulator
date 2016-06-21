@@ -12,14 +12,16 @@ import java.io.FileInputStream;
 public class IJVM implements IJVMInterface {
     private BinaryLoader bytes;
     private Processor processor;
+    private PrintStream out;
 
 	public IJVM(File input) {
         try {
             bytes = new BinaryLoader(input);
             processor = new Processor(bytes);
+            out = System.out;
         }
         catch(Exception e) {
-            System.err.printf("%s\n", e.getMessage());
+            out.println("The file could not be found or read.");
         }
 	}
 
@@ -86,6 +88,11 @@ public class IJVM implements IJVMInterface {
      * Run the vm with the current state until the machine halts.
      */
     public void run() {
+        if (!bytes.isIJVM()) {
+            out.println("ERROR: This is not an IJVM program!");
+            return;
+        }
+
         processor.setRunning(true);
 
         while (processor.isRunning() && (processor.getProgramCounter() < bytes.getText().length)) {
@@ -105,6 +112,7 @@ public class IJVM implements IJVMInterface {
      * @param out, PrintStream to be used for OUT instruction.
      */
     public void setOutput(PrintStream output) {
+        out = output;
         processor.setOutput(output);
     }
 

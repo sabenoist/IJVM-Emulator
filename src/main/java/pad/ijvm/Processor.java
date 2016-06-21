@@ -40,17 +40,29 @@ public class Processor {
         running = false;
     }
 
-    public Word pop() {
-        Word word = frames.getStack().getTopOfStack();
-        frames.getStack().decStackPointer(1);
-
-        return word;
-    }
-
     public void goTo(int offset) {
         frames.incProgramCounter(offset);
     }
 
+    public void halt() {
+        running = false;
+    }
+
+    public void iadd() {
+        Word var1 = pop();
+        Word var2 = pop();
+
+        int sum = var1.toInteger() + var2.toInteger();
+        biPush(new Word(Conversion.intToBytes(sum)));
+    }
+
+    public void iand() {
+        int var1 = pop().toInteger();
+        int var2 = pop().toInteger();
+
+        biPush(new Word(Conversion.intToBytes(var1 & var2)));
+    } 
+    
     public void ifeq() {
         int var = pop().toInteger();
 
@@ -83,69 +95,7 @@ public class Processor {
         else {
             frames.incProgramCounter(3);
         }
-    }
-
-    public void iadd() {
-        Word var1 = pop();
-        Word var2 = pop();
-
-        int sum = var1.toInteger() + var2.toInteger();
-        biPush(new Word(Conversion.intToBytes(sum)));
-    }
-
-    public void isub() {
-        Word var1 = pop();
-        Word var2 = pop();
-
-        int subResult = var2.toInteger() - var1.toInteger();
-        biPush(new Word(Conversion.intToBytes(subResult)));
-    }
-
-    public void iand() {
-        int var1 = pop().toInteger();
-        int var2 = pop().toInteger();
-
-        biPush(new Word(Conversion.intToBytes(var1 & var2)));
-    }
-
-    public void ior() {
-        int var1 = pop().toInteger();
-        int var2 = pop().toInteger();
-
-        biPush(new Word(Conversion.intToBytes(var1 | var2)));
-    }
-
-    public void swap() {
-        Word var1 = pop();
-        Word var2 = pop();
-
-        biPush(var1);
-        biPush(var2);
-    }
-
-    public void ldcW() {
-        int programCounter = frames.getProgramCounter();
-        int position = Conversion.unsignedShortToInt(programCounter + 1, bytes.getText()) * 4;
-
-        byte[] constant = new byte[4];
-        System.arraycopy(bytes.getConstants(), position, constant, 0, 4);
-
-        biPush(new Word(constant));
-    }
-
-    public void iload() {
-        int programCounter = frames.getProgramCounter();
-        int position = (bytes.getText()[programCounter + 1] & 0xFF);
-
-        biPush(frames.getLocalVariable(position));
-    }
-
-    public void istore() {
-        int programCounter = frames.getProgramCounter();
-        int position = (bytes.getText()[programCounter + 1] & 0xFF);
-
-        frames.setLocalVariable(position, pop());
-    }
+    } 
 
     public void iinc() {
         int programCounter = frames.getProgramCounter();
@@ -157,10 +107,13 @@ public class Processor {
         Word result = new Word(Conversion.intToBytes(value1 + value2));
 
         frames.setLocalVariable(position, result);
-    }
+    } 
 
-    public void out() {
-        out.print((char) pop().toInteger());
+    public void iload() {
+        int programCounter = frames.getProgramCounter();
+        int position = (bytes.getText()[programCounter + 1] & 0xFF);
+
+        biPush(frames.getLocalVariable(position));
     }
 
     public void in() {
@@ -174,8 +127,99 @@ public class Processor {
             biPush(new Word(Conversion.intToBytes(character)));
         } 
         catch (Exception e) {
-            System.err.printf("%s\n", e.getMessage());
+            out.println("ERROR: The input could not be read.");
         }
+    }
+
+    public void invokevirtual() {
+        ldcW(); //reads the method location constant and pushes it to the stack.
+        int newProgramCounter = pop().toInteger();
+        int argumentsAmount = Conversion.unsignedShortToInt(newProgramCounter, bytes.getText());
+        int localVariablesAmount = Conversion.unsignedShortToInt(newProgramCounter + 2, bytes.getText());
+
+        //store the arguments in a buffer
+        Word[] argsBuffer = new Word[argumentsAmount];
+        for (int i = argumentsAmount - 1; i >= 0; i--) {
+            argsBuffer[i] = pop();
+        }
+        
+        frames.incProgramCounter(3);
+
+        //switch to new frame
+        frames.addFrame(new Frame());
+        frames.incFramePointer();
+
+        //store the parameters in the LocalVariables of the new frame
+        for (int i = 0; i < argumentsAmount; i++) {
+            frames.setLocalVariable(i, argsBuffer[i]);
+        }
+
+        //continue the program from the first instruction in the method
+        frames.setProgramCounter(newProgramCounter + 4);
+    }
+
+    public void ior() {
+        int var1 = pop().toInteger();
+        int var2 = pop().toInteger();
+
+        biPush(new Word(Conversion.intToBytes(var1 | var2)));
+    }
+
+    public void ireturn() {
+        if (frames.getFramePointer() == 0) {
+            running = false;
+        }
+
+        else {
+            Word returnValue = pop();
+            
+            frames.decFramePointer();
+            biPush(returnValue);
+        }
+    }
+
+    public void istore() {
+        int programCounter = frames.getProgramCounter();
+        int position = (bytes.getText()[programCounter + 1] & 0xFF);
+
+        frames.setLocalVariable(position, pop());
+    }
+
+    public void isub() {
+        Word var1 = pop();
+        Word var2 = pop();
+
+        int subResult = var2.toInteger() - var1.toInteger();
+        biPush(new Word(Conversion.intToBytes(subResult)));
+    }
+
+    public void ldcW() {
+        int programCounter = frames.getProgramCounter();
+        int position = Conversion.unsignedShortToInt(programCounter + 1, bytes.getText()) * 4;
+
+        byte[] constant = new byte[4];
+        System.arraycopy(bytes.getConstants(), position, constant, 0, 4);
+
+        biPush(new Word(constant));
+    }
+
+    public void out() {
+        out.print((char) pop().toInteger());
+    }
+
+    public Word pop() {
+        Word word = frames.getStack().getTopOfStack();
+        frames.getStack().decStackPointer(1);
+
+        return word;
+    }
+
+    public void swap() {
+        Word var1 = pop();
+        Word var2 = pop();
+
+        biPush(var1);
+        biPush(var2);
     }
 
     public void wide() {
@@ -206,66 +250,13 @@ public class Processor {
 
         frames.setLocalVariable(position, pop());
     }
-
-    public void ireturn() {
-        if (frames.getFramePointer() == 0) {
-            running = false;
-        }
-
-        else {
-            Word returnValue = pop();
-            
-            frames.decFramePointer();
-            biPush(returnValue);
-        }
-    }
-
-    public void invokevirtual() {
-        ldcW(); //comment
-        int newProgramCounter = pop().toInteger();
-        int argumentsAmount = Conversion.unsignedShortToInt(newProgramCounter, bytes.getText());
-        int localVariablesAmount = Conversion.unsignedShortToInt(newProgramCounter + 2, bytes.getText());
-
-        //store the arguments in a buffer
-        Word[] argsBuffer = new Word[argumentsAmount];
-        for (int i = argumentsAmount - 1; i >= 0; i--) {
-            argsBuffer[i] = pop();
-        }
-        
-        frames.incProgramCounter(3);
-
-        //switch to new frame
-        frames.addFrame(new Frame());
-        frames.incFramePointer();
-
-        //store the parameters in the LocalVariables of the new frame
-        for (int i = 0; i < argumentsAmount; i++) {
-            frames.setLocalVariable(i, argsBuffer[i]);
-        }
-
-        //continue the program from the first instruction in the method
-        frames.setProgramCounter(newProgramCounter + 4);
-    }
-
-    public void halt() {
-        running = false;
-    }
-
+    
     public void interpretTextByte() {
         int programCounter = frames.getProgramCounter();
         byte input = bytes.getText()[programCounter];
         currentInstruction = input;
 
         switch (input) {
-            case InstructionSet.NOP: 
-                frames.incProgramCounter();
-
-                break; //do nothing
-            case InstructionSet.OUT: 
-                out();
-                frames.incProgramCounter();
-
-                break;
             case InstructionSet.BIPUSH: 
                 int var = bytes.getText()[programCounter + 1];
                 biPush(new Word(Conversion.intToBytes(var)));
@@ -284,6 +275,11 @@ public class Processor {
                 break;
             case InstructionSet.GOTO:
                 goTo(Conversion.shortToInt(programCounter + 1, bytes.getText()));
+
+                break;
+            case InstructionSet.HALT:
+                halt();
+                frames.incProgramCounter();
 
                 break;
             case InstructionSet.IADD:
@@ -352,6 +348,16 @@ public class Processor {
                 frames.incProgramCounter(3);
 
                 break;
+
+            case InstructionSet.NOP: 
+                frames.incProgramCounter();
+
+                break; //do nothing
+            case InstructionSet.OUT: 
+                out();
+                frames.incProgramCounter();
+
+                break;
             case InstructionSet.POP:
                 frames.getStack().decStackPointer(1);
                 frames.incProgramCounter();
@@ -365,11 +371,6 @@ public class Processor {
             case InstructionSet.WIDE:
                 wide();
                 frames.incProgramCounter(4);
-
-                break;
-            case InstructionSet.HALT:
-                halt();
-                frames.incProgramCounter();
 
                 break;
             default:
