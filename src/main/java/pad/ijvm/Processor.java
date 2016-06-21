@@ -1,37 +1,13 @@
 package pad.ijvm;
 
-import java.util.LinkedList;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 import java.io.PrintStream;
+import java.io.InputStream;
+
 
 public class Processor {
-    static final byte NOP = (byte)0x00;
-    static final byte OUT = (byte)0xFD;
-    static final byte BIPUSH = (byte)0x10;
-    static final byte DUP = (byte)0x59;
-    static final byte GOTO = (byte)0xA7;
-    static final byte IADD = (byte)0x60;
-    static final byte IAND = (byte)0x7E;
-    static final byte IFEQ = (byte)0x99;
-    static final byte IFLT = (byte)0x9B;
-    static final byte IF_ICMPEQ = (byte)0x9F;
-    static final byte IINC = (byte)0x84;
-    static final byte ILOAD = (byte)0x15;
-    static final byte INVOKEVIRTUAL = (byte)0xB6;
-    static final byte IOR = (byte)0xB0;
-    static final byte IRETURN = (byte)0xAC;
-    static final byte ISTORE = (byte)0x36;
-    static final byte ISUB = (byte)0x64;
-    static final byte LDC_W = (byte)0x13;
-    static final byte POP = (byte)0x57;
-    static final byte SWAP = (byte)0x5F;
-    static final byte WIDE = (byte)0xC4;
-    static final byte HALT = (byte)0xFF;
-
     private PrintStream out;
+    private InputStream in;
+
     private BinaryLoader bytes;
     private FrameList frames;
 
@@ -39,11 +15,12 @@ public class Processor {
     private boolean running;
     
     public Processor(BinaryLoader bLoader) {
-        currentInstruction = NOP;
+        currentInstruction = InstructionSet.NOP;
         running = false;
 
         bytes = bLoader;
         out = System.out;
+        in = System.in;
         
         frames = new FrameList();
         frames.addFrame(new Frame());
@@ -52,6 +29,15 @@ public class Processor {
     public void biPush(Word word) {
         frames.getStack().setTopOfStack(word);
         frames.getStack().incStackPointer(1);
+    }
+
+    public void dup() {
+        biPush(frames.getStack().getTopOfStack());
+    }
+
+    public void err() {
+        out.println("A happy little accident has occurred.");
+        running = false;
     }
 
     public Word pop() {
@@ -69,7 +55,7 @@ public class Processor {
         int var = pop().toInteger();
 
         if (var == 0) {
-            goTo(getShortAsInt(frames.getProgramCounter() + 1, bytes.getText()));
+            goTo(Conversion.shortToInt(frames.getProgramCounter() + 1, bytes.getText()));
         }
         else {
             frames.incProgramCounter(3);
@@ -80,7 +66,7 @@ public class Processor {
         int var = pop().toInteger();
 
         if (var < 0) {
-            goTo(getShortAsInt(frames.getProgramCounter() + 1, bytes.getText()));
+            goTo(Conversion.shortToInt(frames.getProgramCounter() + 1, bytes.getText()));
         }
         else {
             frames.incProgramCounter(3);
@@ -92,7 +78,7 @@ public class Processor {
         int var2 = pop().toInteger();
 
         if (var1 == var2) {
-            goTo(getShortAsInt(frames.getProgramCounter() + 1, bytes.getText()));
+            goTo(Conversion.shortToInt(frames.getProgramCounter() + 1, bytes.getText()));
         }
         else {
             frames.incProgramCounter(3);
@@ -104,7 +90,7 @@ public class Processor {
         Word var2 = pop();
 
         int sum = var1.toInteger() + var2.toInteger();
-        biPush(new Word(getIntAsBytes(sum)));
+        biPush(new Word(Conversion.intToBytes(sum)));
     }
 
     public void isub() {
@@ -112,21 +98,21 @@ public class Processor {
         Word var2 = pop();
 
         int subResult = var2.toInteger() - var1.toInteger();
-        biPush(new Word(getIntAsBytes(subResult)));
+        biPush(new Word(Conversion.intToBytes(subResult)));
     }
 
     public void iand() {
         int var1 = pop().toInteger();
         int var2 = pop().toInteger();
 
-        biPush(new Word(getIntAsBytes(var1 & var2)));
+        biPush(new Word(Conversion.intToBytes(var1 & var2)));
     }
 
     public void ior() {
         int var1 = pop().toInteger();
         int var2 = pop().toInteger();
 
-        biPush(new Word(getIntAsBytes(var1 | var2)));
+        biPush(new Word(Conversion.intToBytes(var1 | var2)));
     }
 
     public void swap() {
@@ -139,7 +125,7 @@ public class Processor {
 
     public void ldcW() {
         int programCounter = frames.getProgramCounter();
-        int position = getUnsignedShortAsInt(programCounter + 1, bytes.getText()) * 4;
+        int position = Conversion.unsignedShortToInt(programCounter + 1, bytes.getText()) * 4;
 
         byte[] constant = new byte[4];
         System.arraycopy(bytes.getConstants(), position, constant, 0, 4);
@@ -168,7 +154,7 @@ public class Processor {
         int value1 = frames.getLocalVariable(position).toInteger();
         int value2 = bytes.getText()[programCounter + 2];
 
-        Word result = new Word(getIntAsBytes(value1 + value2));
+        Word result = new Word(Conversion.intToBytes(value1 + value2));
 
         frames.setLocalVariable(position, result);
     }
@@ -177,15 +163,30 @@ public class Processor {
         out.print((char) pop().toInteger());
     }
 
+    public void in() {
+        try {   
+            if (in.available() == 0) {
+                biPush(new Word(Conversion.intToBytes(0)));
+                return;
+            }
+
+            int character = (in.read() & 0xFF);
+            biPush(new Word(Conversion.intToBytes(character)));
+        } 
+        catch (Exception e) {
+            System.err.printf("%s\n", e.getMessage());
+        }
+    }
+
     public void wide() {
         int programCounter = frames.getProgramCounter();
 
         switch(bytes.getText()[programCounter + 1]) {
-            case ILOAD:
+            case InstructionSet.ILOAD:
                 wideIload();
 
                 break;
-            case ISTORE:
+            case InstructionSet.ISTORE:
                 wideIstore();
 
                 break;
@@ -194,14 +195,14 @@ public class Processor {
 
     public void wideIload() {
         int programCounter = frames.getProgramCounter();
-        int position = getUnsignedShortAsInt(programCounter + 2, bytes.getText());
+        int position = Conversion.unsignedShortToInt(programCounter + 2, bytes.getText());
 
         biPush(frames.getLocalVariable(position));
     }
 
     public void wideIstore() {
         int programCounter = frames.getProgramCounter();
-        int position = getUnsignedShortAsInt(programCounter + 2, bytes.getText());
+        int position = Conversion.unsignedShortToInt(programCounter + 2, bytes.getText());
 
         frames.setLocalVariable(position, pop());
     }
@@ -215,23 +216,20 @@ public class Processor {
             Word returnValue = pop();
             
             frames.decFramePointer();
-            //frames.getStack().decStackPointer(1); //to overwrite the objref
             biPush(returnValue);
         }
     }
 
     public void invokevirtual() {
-        ldcW();
+        ldcW(); //comment
         int newProgramCounter = pop().toInteger();
-        int argumentsAmount = getUnsignedShortAsInt(newProgramCounter, bytes.getText());
-        int localVariablesAmount = getUnsignedShortAsInt(newProgramCounter + 2, bytes.getText());
+        int argumentsAmount = Conversion.unsignedShortToInt(newProgramCounter, bytes.getText());
+        int localVariablesAmount = Conversion.unsignedShortToInt(newProgramCounter + 2, bytes.getText());
 
-        System.out.println("argumentsAmount = " + argumentsAmount);
         //store the arguments in a buffer
         Word[] argsBuffer = new Word[argumentsAmount];
         for (int i = argumentsAmount - 1; i >= 0; i--) {
             argsBuffer[i] = pop();
-            System.out.println("parameter " + i + " = " + argsBuffer[i].toInteger());
         }
         
         frames.incProgramCounter(3);
@@ -240,7 +238,7 @@ public class Processor {
         frames.addFrame(new Frame());
         frames.incFramePointer();
 
-        //store the parameters in the LocalVariables
+        //store the parameters in the LocalVariables of the new frame
         for (int i = 0; i < argumentsAmount; i++) {
             frames.setLocalVariable(i, argsBuffer[i]);
         }
@@ -253,131 +251,123 @@ public class Processor {
         running = false;
     }
 
-    public int getShortAsInt(int pos, byte[] bytes) {
-        return ((bytes[pos] << 8) | bytes[pos + 1]);
-    }
-
-    public int getUnsignedShortAsInt(int pos, byte[] bytes) {
-        return (((bytes[pos] & 0xFF) << 8) | (bytes[pos + 1] & 0xFF));
-    }
-
-    public int getWordAsInt(int pos, byte[] bytes) {
-        return ((bytes[pos] & 0xFF) << 24) | ((bytes[pos + 1] & 0xFF) << 16) | ((bytes[pos + 2] & 0xFF) << 8) | (bytes[pos + 3] & 0xFF);
-    }
-
-    public byte[] getIntAsBytes(int var) {
-        return ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(var).array();
-    }
-
     public void interpretTextByte() {
         int programCounter = frames.getProgramCounter();
         byte input = bytes.getText()[programCounter];
         currentInstruction = input;
 
         switch (input) {
-            case NOP: 
+            case InstructionSet.NOP: 
                 frames.incProgramCounter();
 
                 break; //do nothing
-            case OUT: 
+            case InstructionSet.OUT: 
                 out();
-
                 frames.incProgramCounter();
 
                 break;
-            case BIPUSH: 
+            case InstructionSet.BIPUSH: 
                 int var = bytes.getText()[programCounter + 1];
-                biPush(new Word(getIntAsBytes(var)));
-
+                biPush(new Word(Conversion.intToBytes(var)));
                 frames.incProgramCounter(2);
 
                 break;
-            case DUP: 
-                biPush(frames.getStack().getTopOfStack());
+            case InstructionSet.DUP: 
+                dup();
                 frames.incProgramCounter();
                 
                 break;
-            case GOTO:
-                goTo(getShortAsInt(programCounter + 1, bytes.getText()));
+            case InstructionSet.ERR:
+                err();
+                frames.incProgramCounter();
 
                 break;
-            case IADD:
+            case InstructionSet.GOTO:
+                goTo(Conversion.shortToInt(programCounter + 1, bytes.getText()));
+
+                break;
+            case InstructionSet.IADD:
                 iadd();
                 frames.incProgramCounter();
 
                 break;
-            case IAND:
+            case InstructionSet.IAND:
                 iand();
                 frames.incProgramCounter();
 
                 break;
-            case IFEQ:
+            case InstructionSet.IFEQ:
                 ifeq();
 
                 break;
-            case IFLT:
+            case InstructionSet.IFLT:
                 iflt();
 
                 break;
-            case IF_ICMPEQ:
+            case InstructionSet.IF_ICMPEQ:
                 ifIcmpeq();
 
                 break;
-            case IINC:
+            case InstructionSet.IINC:
                 iinc();
                 frames.incProgramCounter(3);
 
                 break;
-            case ILOAD:
+            case InstructionSet.ILOAD:
                 iload();
                 frames.incProgramCounter(2);
 
                 break;
-            case INVOKEVIRTUAL:
+            case InstructionSet.IN:
+                in();
+                frames.incProgramCounter();
+
+                break;
+            case InstructionSet.INVOKEVIRTUAL:
                 invokevirtual();
 
                 break;
-            case IOR:
+            case InstructionSet.IOR:
                 ior();
                 frames.incProgramCounter();
 
                 break;
-            case IRETURN:
+            case InstructionSet.IRETURN:
                 ireturn();
                 frames.incProgramCounter();
 
                 break;
-            case ISTORE:
+            case InstructionSet.ISTORE:
                 istore();
                 frames.incProgramCounter(2);
 
                 break;
-            case ISUB:
+            case InstructionSet.ISUB:
                 isub();
                 frames.incProgramCounter();
 
                 break;
-            case LDC_W:
+            case InstructionSet.LDC_W:
                 ldcW();
                 frames.incProgramCounter(3);
 
                 break;
-            case POP:
+            case InstructionSet.POP:
                 frames.getStack().decStackPointer(1);
                 frames.incProgramCounter();
 
                 break;
-            case SWAP:
+            case InstructionSet.SWAP:
                 swap();
                 frames.incProgramCounter();
 
                 break;
-            case WIDE:
+            case InstructionSet.WIDE:
                 wide();
                 frames.incProgramCounter(4);
 
                 break;
-            case HALT:
+            case InstructionSet.HALT:
                 halt();
                 frames.incProgramCounter();
 
@@ -423,5 +413,9 @@ public class Processor {
 
     public void setOutput(PrintStream output) {
         out = output;
+    }
+
+    public void setInput(InputStream input) {
+        in = input;
     }
 }

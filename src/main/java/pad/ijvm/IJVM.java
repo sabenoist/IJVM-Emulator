@@ -13,8 +13,6 @@ public class IJVM implements IJVMInterface {
     private BinaryLoader bytes;
     private Processor processor;
 
-	private InputStream in;
-
 	public IJVM(File input) {
         try {
             bytes = new BinaryLoader(input);
@@ -22,7 +20,6 @@ public class IJVM implements IJVMInterface {
         }
         catch(Exception e) {
             System.err.printf("%s\n", e.getMessage());
-            System.exit(1);
         }
 	}
 
@@ -116,7 +113,7 @@ public class IJVM implements IJVMInterface {
      * @param in, InputStream to be used for IN instruction.
      */
     public void setInput(InputStream input) {
-    	in = input;
+    	processor.setInput(input);
 
     }
 }

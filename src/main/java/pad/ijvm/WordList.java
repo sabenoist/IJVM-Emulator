@@ -28,6 +28,11 @@ public class WordList {
     }
 
     public Word getWord(int pos) {
+        //return 0 if word does not exist.
+        if (pos >= words.length) {
+            return new Word(Conversion.intToBytes(0)); 
+        }
+
         return words[pos];
     }
 

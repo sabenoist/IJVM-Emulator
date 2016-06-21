@@ -56,23 +56,4 @@ public class Stack {
 
         return result;
     }
-
-    public String toString() {
-        int pos = 0;
-        String result = "";
-
-        for (int i = 0; i < stack.length; i++) {
-            if (pos == 0) {
-                result += i + ".    ";
-            }
-
-            result += stack[i].toString() + "    ";
-
-            if (pos == 7) {
-                result += "\n";
-            }
-        }
-
-        return result;
-    }
 }
