@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileInputStream;
 
-
 public class IJVM implements IJVMInterface {
     private BinaryLoader bytes;
     private Processor processor;

@@ -1,6 +1,5 @@
 package pad.ijvm;
 
-
 public class InstructionSet {
     static final byte BIPUSH = (byte)0x10;
     static final byte DUP = (byte)0x59;

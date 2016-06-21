@@ -3,7 +3,6 @@ package pad.ijvm;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-
 public class Conversion {
 
 	public static int shortToInt(int pos, byte[] bytes) {
