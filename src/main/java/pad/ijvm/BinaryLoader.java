@@ -80,8 +80,6 @@ public class BinaryLoader {
     }
 
     public boolean isIJVM() {
-        byte[] magicNumber = new byte[] {(byte)0x1D, (byte)0xEA, (byte)0xDF, (byte)0xAD};
-
         return Arrays.equals(programIdentifier, MAGIC_NUMBER);
     }
 

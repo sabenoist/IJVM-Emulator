@@ -13,14 +13,19 @@ public class IJVM implements IJVMInterface {
     private Processor processor;
     private PrintStream out;
 
+    private boolean binaryLoaded;
+
 	public IJVM(File input) {
+        out = System.out;
+
         try {
             bytes = new BinaryLoader(input);
             processor = new Processor(bytes);
-            out = System.out;
+
+            binaryLoaded = true;
         }
         catch(Exception e) {
-            out.println("The file could not be found or read.");
+            binaryLoaded = false;
         }
 	}
 
@@ -87,6 +92,11 @@ public class IJVM implements IJVMInterface {
      * Run the vm with the current state until the machine halts.
      */
     public void run() {
+        if (!binaryLoaded) {
+            out.println("ERROR: The binary file could not be read or found!");
+            return;
+        }
+
         if (!bytes.isIJVM()) {
             out.println("ERROR: This is not an IJVM program!");
             return;
