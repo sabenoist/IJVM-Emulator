@@ -55,7 +55,7 @@ public class BinaryLoader {
         byte[] constantsSizeArray = new byte[BLOCK_SIZE];
 
         System.arraycopy(bytes, position, constantsSizeArray, 0, BLOCK_SIZE);
-        int constantsSize = Conversion.wordToInt(0, constantsSizeArray);
+        int constantsSize = Conversion.unsignedWordToInt(0, constantsSizeArray);
 
         //Stores the constants block into the constants array
         position += BLOCK_SIZE;
@@ -71,7 +71,7 @@ public class BinaryLoader {
         byte[] textSizeArray = new byte[BLOCK_SIZE];
 
         System.arraycopy(bytes, position, textSizeArray, 0, BLOCK_SIZE);
-        int textSize = Conversion.wordToInt(0, textSizeArray);
+        int textSize = Conversion.unsignedWordToInt(0, textSizeArray);
 
         //Stores the text block into the text array
         position += BLOCK_SIZE;
